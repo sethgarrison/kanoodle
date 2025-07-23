@@ -189,6 +189,10 @@ export const GameProvider = ({ children }) => {
       return
     }
 
+    // Deselect any currently selected piece when getting a hint
+    setSelectedPiece(null)
+    setDraggedPiece(null)
+
     const hint = solutionManager.getNextHint()
     console.log('Got hint:', hint)
     

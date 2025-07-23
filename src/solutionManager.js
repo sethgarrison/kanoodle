@@ -161,7 +161,7 @@ export class SolutionManager {
 
     if (!pieceData) return false
 
-    return gameEngine.placePiece(
+    return gameEngine.placePieceExact(
       pieceData.pieceKey,
       pieceData.position[0],
       pieceData.position[1],

@@ -156,6 +156,42 @@ export class KanoodleGameEngine {
     return true
   }
 
+  // Place a piece on the grid with exact rotation and flip (for hints)
+  placePieceExact(pieceKey, row, col, rotation = 0, flip = false) {
+    if (!this.canPlacePiece(pieceKey, row, col, rotation, flip)) {
+      return false
+    }
+
+    const piece = this.pieces[pieceKey]
+    const rotatedCoordinates = this.getRotatedCoordinates(pieceKey, rotation, flip)
+    
+    // Place the piece on the grid
+    for (const [pieceRow, pieceCol] of rotatedCoordinates) {
+      const gridRow = row + pieceRow
+      const gridCol = col + pieceCol
+      this.grid[gridRow][gridCol] = pieceKey
+    }
+
+    // Remove piece from available pieces
+    delete this.availablePieces[pieceKey]
+    
+    // Add to placed pieces with exact rotation info
+    this.placedPieces.push({
+      pieceKey,
+      row,
+      col,
+      piece,
+      rotation: rotation,
+      flip: flip
+    })
+
+    // Update rotation and flip state to match the placed piece
+    this.pieceRotations[pieceKey] = rotation
+    this.pieceFlips[pieceKey] = flip
+
+    return true
+  }
+
   // Remove a piece from the grid
   removePiece(pieceKey) {
     // Find the piece in placed pieces
