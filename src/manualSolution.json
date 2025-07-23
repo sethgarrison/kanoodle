@@ -1,0 +1,112 @@
+{
+    "solution": [
+      {
+        "pieceKey": "darkBlueL",
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0,
+        "flip": true
+      },
+      {
+        "pieceKey": "orangeL",
+        "position": [
+          1,
+          0
+        ],
+        "rotation": 0,
+        "flip": true
+      },
+      {
+        "pieceKey": "darkPinkL",
+        "position": [
+          2,
+          0
+        ],
+        "rotation": 0,
+        "flip": true
+      },
+      {
+        "pieceKey": "whiteL",
+        "position": [
+          3,
+          0
+        ],
+        "rotation": 2,
+        "flip": false
+      },
+      {
+        "pieceKey": "redZigzag",
+        "position": [
+          0,
+          4
+        ],
+        "rotation": 3,
+        "flip": false
+      },
+      {
+        "pieceKey": "yellowT",
+        "position": [
+          3,
+          3
+        ],
+        "rotation": 2,
+        "flip": false
+      },
+      {
+        "pieceKey": "greenSquare",
+        "position": [
+          3,
+          6
+        ],
+        "rotation": 0,
+        "flip": false
+      },
+      {
+        "pieceKey": "purpleLine",
+        "position": [
+          0,
+          7
+        ],
+        "rotation": 0,
+        "flip": false
+      },
+      {
+        "pieceKey": "lightPinkT",
+        "position": [
+          1,
+          7
+        ],
+        "rotation": 0,
+        "flip": false
+      },
+      {
+        "pieceKey": "lightBlueL",
+        "position": [
+          2,
+          8
+        ],
+        "rotation": 2,
+        "flip": false
+      },
+      {
+        "pieceKey": "greenL2",
+        "position": [
+          2,
+          6
+        ],
+        "rotation": 2,
+        "flip": true
+      },
+      {
+        "pieceKey": "greyCross",
+        "position": [
+          1,
+          3
+        ],
+        "rotation": 0,
+        "flip": false
+      }
+    ]
+  }

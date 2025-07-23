@@ -1,0 +1,1 @@
+import { KanoodleGameEngine } from "../src/gameEngine.js"; console.log("Testing algorithm efficiency..."); const engine = new KanoodleGameEngine(); console.log("First piece:", Object.keys(engine.getAllPieces())[0]);

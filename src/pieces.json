@@ -1,0 +1,103 @@
+{
+  "pieces": {
+    "greenSquare": {
+      "name": "Green Square",
+      "color": "#84cc16",
+      "coordinates": [
+        [0, 0], [0, 1],
+        [1, 0], [1, 1]
+      ]
+    },
+    "yellowT": {
+      "name": "Yellow T",
+      "color": "#fbbf24",
+      "coordinates": [
+        [0, 0], [0, 1], [0, 2],
+        [1, 0], [1, 2]
+      ]
+    },
+    "darkPinkL": {
+      "name": "Dark Pink L",
+      "color": "#ec4899",
+      "coordinates": [
+        [0, 1], [0, 2],
+        [1, 0], [1, 1],
+        [2, 0]
+      ]
+    },
+    "redZigzag": {
+      "name": "Red Zigzag",
+      "color": "#ef4444",
+      "coordinates": [
+        [0, 1],
+        [1, 0], [1, 1],
+        [2, 0], [2, 1]
+      ]
+    },
+    "greyCross": {
+      "name": "Grey Cross",
+      "color": "#9ca3af",
+      "coordinates": [
+        [0, 1],
+        [1, 0], [1, 1], [1, 2],
+        [2, 1]
+      ]
+    },
+    "greenL2": {
+      "name": "Green L2",
+      "color": "#15803d",
+      "coordinates": [
+        [0, 2], [0, 3],
+        [1, 0], [1, 1], [1, 2]
+      ]
+    },
+    "orangeL": {
+      "name": "Orange L",
+      "color": "#f97316",
+      "coordinates": [
+        [0, 0], [0, 1], [0, 2],
+        [1, 0]
+      ]
+    },
+    "darkBlueL": {
+      "name": "Dark Blue L",
+      "color": "#1e40af",
+      "coordinates": [
+        [0, 0], [0, 1], [0, 2], [0, 3],
+        [1, 0]
+      ]
+    },
+    "lightBlueL": {
+      "name": "Light Blue L",
+      "color": "#0ea5e9",
+      "coordinates": [
+        [0, 0], [0, 1], [0, 2],
+        [1, 0],
+        [2, 0]
+      ]
+    },
+    "whiteL": {
+      "name": "White L",
+      "color": "#ffffff",
+      "coordinates": [
+        [0, 0], [0, 1],
+        [1, 1]
+      ]
+    },
+    "purpleLine": {
+      "name": "Purple Line",
+      "color": "#a855f7",
+      "coordinates": [
+        [0, 0], [0, 1], [0, 2], [0, 3]
+      ]
+    },
+    "lightPinkT": {
+      "name": "Light Pink T",
+      "color": "#f9a8d4",
+      "coordinates": [
+        [0, 0], [0, 1], [0, 2], [0, 3],
+        [1, 2]
+      ]
+    }
+  }
+} 
