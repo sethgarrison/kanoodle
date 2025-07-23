@@ -1,0 +1,196 @@
+/* Grid Styles */
+@import './variables.css';
+
+/* Grid Container */
+.grid-container {
+  display: grid;
+  grid-template-rows: repeat(5, 1fr);
+  gap: 4px;
+  background: var(--background-secondary);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-small);
+  box-shadow: 
+    inset 0 4px 8px rgba(0, 0, 0, 0.4),
+    var(--shadow-medium);
+  margin: var(--spacing-md) 0;
+  position: relative;
+}
+
+.grid-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  border-radius: var(--border-radius-small);
+  pointer-events: none;
+}
+
+/* Grid Rows and Cells */
+.grid-row {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 4px;
+}
+
+.grid-cell {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid var(--background-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  transition: all var(--transition-medium);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 30%, var(--background-tertiary), var(--background-secondary));
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    var(--shadow-light);
+}
+
+.grid-cell:hover {
+  transform: scale(1.1);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    var(--shadow-medium);
+  z-index: 10;
+}
+
+.grid-cell:active {
+  transform: scale(0.95);
+}
+
+/* Drag and Drop States */
+.grid-cell.drag-over {
+  background: radial-gradient(circle at 30% 30%, #38b2ac, #319795);
+  border-color: #38b2ac;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.3);
+}
+
+.grid-cell.drop-zone {
+  background: radial-gradient(circle at 30% 30%, #10b981, #059669);
+  border-color: #10b981;
+  animation: dropPulse 1s infinite;
+}
+
+.grid-cell.drop-zone-preview {
+  background: radial-gradient(circle at 30% 30%, var(--piece-color, var(--accent-primary)), var(--piece-color-dark, var(--accent-secondary)));
+  border-color: var(--piece-color-dark, var(--accent-secondary));
+  animation: dropZonePulse 1.5s infinite;
+}
+
+@keyframes dropPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes dropZonePulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+  }
+  50% { 
+    transform: scale(1.1);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.5);
+  }
+}
+
+/* Filled Cells */
+.grid-cell.filled {
+  background: radial-gradient(circle at 30% 30%, var(--piece-color, var(--accent-primary)), var(--piece-color-dark, var(--accent-secondary)));
+  border-color: var(--piece-color-dark, var(--accent-secondary));
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    var(--shadow-medium);
+  position: relative;
+  cursor: pointer;
+}
+
+.grid-cell.filled::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  right: 20%;
+  bottom: 20%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.grid-cell.filled:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+}
+
+/* Grid Info */
+.grid-info {
+  background: var(--background-primary);
+  border-radius: var(--border-radius-small);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.grid-info p {
+  margin: var(--spacing-xs) 0;
+  color: var(--light-text);
+}
+
+.hint-status {
+  color: var(--accent-primary) !important;
+  font-weight: 600;
+  animation: hintPulse 2s infinite;
+}
+
+@keyframes hintPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .grid-container {
+    max-width: 100%;
+    max-height: 50vh;
+    padding: 4px;
+    gap: 2px;
+  }
+
+  .grid-cell {
+    border-width: 1px;
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-container {
+    max-width: 100%;
+    max-height: 45vh;
+    padding: 2px;
+    gap: 1px;
+  }
+
+  .grid-cell {
+    border-width: 1px;
+    font-size: 0.5rem;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .grid-cell {
+    min-height: 24px;
+    min-width: 24px;
+  }
+} 

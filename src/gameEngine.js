@@ -121,7 +121,7 @@ export class KanoodleGameEngine {
     const currentRotation = this.pieceRotations[pieceKey] || 0
     const currentFlip = this.pieceFlips[pieceKey] || false
     const finalRotation = (currentRotation + rotation) % 4
-    const finalFlip = flip // Use the flip parameter directly
+    const finalFlip = currentFlip !== flip // XOR operation to combine current and new flip
     
     if (!this.canPlacePiece(pieceKey, row, col, finalRotation, finalFlip)) {
       return false

@@ -1,0 +1,228 @@
+/* Piece Styles */
+@import './variables.css';
+
+/* Pieces Container */
+.pieces-container {
+  margin-top: var(--spacing-sm);
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.pieces-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.pieces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+/* Piece Display */
+.piece-display {
+  background: rgba(31, 41, 55, 0.9);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-md);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-medium);
+  position: relative;
+  box-shadow: var(--shadow-medium);
+}
+
+.piece-display:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-heavy);
+  border-color: var(--accent-primary);
+}
+
+.piece-display:active {
+  transform: translateY(0);
+}
+
+.piece-display.selected {
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.piece-display.unavailable {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(156, 163, 175, 0.3);
+}
+
+.piece-display.unavailable:hover {
+  transform: none;
+  box-shadow: var(--shadow-medium);
+}
+
+.piece-display[draggable="true"]:hover {
+  cursor: grab;
+}
+
+.piece-display[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Piece Controls */
+.piece-controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.rotate-button,
+.flip-button {
+  background: var(--button-background);
+  color: var(--button-text);
+  border: none;
+  border-radius: var(--border-radius-small);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+}
+
+.rotate-button:hover,
+.flip-button:hover {
+  background: var(--button-hover);
+  transform: scale(1.05);
+}
+
+.rotate-button:active,
+.flip-button:active {
+  transform: scale(0.95);
+}
+
+.rotation-hint {
+  font-size: 0.7rem;
+  color: var(--light-text);
+  margin-top: var(--spacing-xs);
+  opacity: 0.8;
+}
+
+/* Piece Grid */
+.piece-grid {
+  display: grid;
+  gap: 2px;
+  margin: var(--spacing-sm) auto;
+  justify-content: center;
+}
+
+.piece-row {
+  display: flex;
+  gap: 2px;
+}
+
+.piece-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.piece-cell.filled {
+  background: radial-gradient(circle at 30% 30%, var(--piece-color, var(--accent-primary)), var(--piece-color-dark, var(--accent-secondary)));
+  border-color: var(--piece-color-dark, var(--accent-secondary));
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Selected Piece Info */
+.selected-piece-info {
+  background: rgba(31, 41, 55, 0.8);
+  border-radius: var(--border-radius-small);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  text-align: center;
+}
+
+/* Hint Piece Display */
+.hint-piece-display {
+  margin: var(--spacing-md) 0;
+  text-align: center;
+}
+
+.hint-piece-display .piece-display {
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.hint-piece-display .piece-display .rotate-button,
+.hint-piece-display .piece-display .flip-button {
+  display: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .pieces-container {
+    max-height: 50vh;
+  }
+
+  .pieces-grid {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: var(--spacing-xs);
+  }
+
+  .piece-display {
+    padding: var(--spacing-xs);
+  }
+
+  .rotate-button,
+  .flip-button {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+
+  .piece-cell {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pieces-container {
+    max-height: 45vh;
+  }
+
+  .pieces-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 4px;
+  }
+
+  .piece-display {
+    padding: 6px;
+  }
+
+  .rotate-button,
+  .flip-button {
+    min-width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+
+  .piece-cell {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .piece-display {
+    min-height: 60px;
+  }
+} 

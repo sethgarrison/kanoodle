@@ -1,0 +1,119 @@
+import React from 'react'
+import { gameEngine } from '../gameEngine'
+
+function PieceDisplay({ piece, onClick, isSelected, isAvailable, onDragStart, onRotate, onFlip, rotation = 0, flip = false, pieceKey }) {
+  const maxRow = Math.max(...piece.coordinates.map(coord => coord[0]))
+  const maxCol = Math.max(...piece.coordinates.map(coord => coord[1]))
+  const gridSize = Math.max(maxRow + 1, maxCol + 1)
+  
+  const getDarkerColor = (color) => {
+    // Convert hex to RGB and darken
+    const hex = color.replace('#', '')
+    const r = parseInt(hex.substr(0, 2), 16)
+    const g = parseInt(hex.substr(2, 2), 16)
+    const b = parseInt(hex.substr(4, 2), 16)
+    
+    // Darken by 30%
+    const darkR = Math.max(0, r * 0.7)
+    const darkG = Math.max(0, g * 0.7)
+    const darkB = Math.max(0, b * 0.7)
+    
+    return `rgb(${Math.round(darkR)}, ${Math.round(darkG)}, ${Math.round(darkB)})`
+  }
+  
+  const renderPieceGrid = () => {
+    const grid = Array(gridSize).fill().map(() => Array(gridSize).fill(null))
+    
+    // Apply rotation to coordinates
+    const rotatedCoordinates = gameEngine.getRotatedCoordinates(
+      pieceKey,
+      rotation,
+      flip
+    )
+    
+    rotatedCoordinates.forEach(([row, col]) => {
+      if (row < gridSize && col < gridSize) {
+        grid[row][col] = true
+      }
+    })
+    
+    return (
+      <div className="piece-grid">
+        {grid.map((row, rowIndex) => (
+          <div key={rowIndex} className="piece-row">
+            {row.map((cell, colIndex) => (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className={`piece-cell ${cell ? 'filled' : ''}`}
+                style={{ 
+                  '--piece-color': piece.color,
+                  '--piece-color-dark': getDarkerColor(piece.color),
+                  opacity: isAvailable ? 1 : 0.5
+                }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  const handleDragStart = (e) => {
+    if (!isAvailable) {
+      e.preventDefault()
+      return
+    }
+    
+    e.dataTransfer.setData('text/plain', piece.name)
+    e.dataTransfer.effectAllowed = 'copy'
+    
+    if (onDragStart) {
+      onDragStart(piece)
+    }
+  }
+
+  const handleRotate = (e) => {
+    e.stopPropagation()
+    if (onRotate) {
+      onRotate(piece)
+    }
+  }
+
+  const handleFlip = (e) => {
+    e.stopPropagation()
+    if (onFlip) {
+      onFlip(piece)
+    }
+  }
+
+  return (
+    <div 
+      className={`piece-display ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+      onClick={() => isAvailable && onClick(piece)}
+      draggable={isAvailable}
+      onDragStart={handleDragStart}
+    >
+      {isAvailable && (
+        <div className="piece-controls">
+          <button
+            className="rotate-button"
+            onClick={handleRotate}
+            title="Rotate piece"
+          >
+            🔄
+          </button>
+          <button
+            className="flip-button"
+            onClick={handleFlip}
+            title="Flip piece"
+          >
+            ↔️
+          </button>
+        </div>
+      )}
+      {renderPieceGrid()}
+    </div>
+  )
+}
+
+export default PieceDisplay 

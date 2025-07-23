@@ -27,7 +27,7 @@
     },
     "redZigzag": {
       "name": "Red Zigzag",
-      "color": "#ef4444",
+      "color": "#dc2626",
       "coordinates": [
         [0, 1],
         [1, 0], [1, 1],

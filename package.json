@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "generate-solutions": "node scripts/generateSolutions.js"
+    "generate-solutions": "node scripts/generateSolutions.js",
+    "deploy": "npm run build && git add docs && git commit -m 'Deploy to GitHub Pages' && git push"
   },
   "dependencies": {
     "react": "^18.2.0",

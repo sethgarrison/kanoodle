@@ -17,19 +17,56 @@ export class SolutionManager {
     return this.manualSolution
   }
 
+  // Convert coordinates to kid-friendly language
+  getKidFriendlyPosition(row, col) {
+    const rowNames = ['top', 'second', 'third', 'fourth', 'bottom']
+    const colNames = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th']
+    
+    return `${rowNames[row]} row, ${colNames[col]} column`
+  }
+
+  // Convert piece names to kid-friendly names
+  getKidFriendlyPieceName(pieceKey) {
+    const pieceNames = {
+      'darkBlueL': 'blue L',
+      'orangeL': 'orange L', 
+      'darkPinkL': 'pink L',
+      'whiteL': 'white L',
+      'redZigzag': 'red zigzag',
+      'yellowT': 'yellow T',
+      'greenSquare': 'green square',
+      'purpleLine': 'purple line',
+      'lightPinkT': 'light pink T',
+      'lightBlueL': 'light blue L',
+      'greenL2': 'dark green L',
+      'greyCross': 'gray cross'
+    }
+    
+    return pieceNames[pieceKey] || pieceKey
+  }
+
   // Get step-by-step guide for current solution
   getCurrentGuide() {
     return {
-      steps: this.manualSolution.map((piece, index) => ({
-        stepNumber: index + 1,
-        piece: {
-          name: piece.pieceKey,
-          position: { row: piece.position[0], col: piece.position[1] },
-          rotation: piece.rotation,
-          flip: piece.flip
-        },
-        description: `Place ${piece.pieceKey} at position [${piece.position[0]}, ${piece.position[1]}] with rotation ${piece.rotation}${piece.flip ? ' and flipped' : ''}`
-      })),
+      steps: this.manualSolution.map((piece, index) => {
+        const position = this.getKidFriendlyPosition(piece.position[0], piece.position[1])
+        const rotationText = piece.rotation === 0 ? 'normal' : 
+                           piece.rotation === 1 ? 'turned right' : 
+                           piece.rotation === 2 ? 'upside down' : 'turned left'
+        const flipText = piece.flip ? ' and flip it' : ''
+        const pieceName = this.getKidFriendlyPieceName(piece.pieceKey)
+        
+        return {
+          stepNumber: index + 1,
+          piece: {
+            name: piece.pieceKey,
+            position: { row: piece.position[0], col: piece.position[1] },
+            rotation: piece.rotation,
+            flip: piece.flip
+          },
+          description: `Put the ${pieceName} in the ${position} ${rotationText}${flipText}`
+        }
+      }),
       totalSteps: this.manualSolution.length
     }
   }
@@ -41,13 +78,17 @@ export class SolutionManager {
 
     if (this.currentHintStep < guide.steps.length) {
       const hint = guide.steps[this.currentHintStep]
-      this.currentHintStep++
       return {
         ...hint,
-        progress: `${this.currentHintStep}/${guide.totalSteps}`
+        progress: `${this.currentHintStep + 1}/${guide.totalSteps}`
       }
     }
     return null
+  }
+
+  // Advance to next hint (only called when hint is applied)
+  advanceHint() {
+    this.currentHintStep++
   }
 
   // Get current hint step
