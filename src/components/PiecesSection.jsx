@@ -7,6 +7,7 @@ function PiecesSection({
   availablePieces, 
   selectedPiece, 
   hintPreview,
+  dragAndDropMode,
   onPieceSelect, 
   onRotate, 
   onFlip
@@ -25,16 +26,29 @@ function PiecesSection({
             
             return (
               <div key={key} className="piece-wrapper">
-                <DraggablePiece
-                  pieceKey={key}
-                  piece={piece}
-                  isSelected={isSelected}
-                  isHintPiece={isHintPiece}
-                  isAvailable={availablePieces[key]}
-                  onPieceSelect={onPieceSelect}
-                  rotation={rotation}
-                  flip={flip}
-                />
+                {dragAndDropMode ? (
+                  <DraggablePiece
+                    pieceKey={key}
+                    piece={piece}
+                    isSelected={isSelected}
+                    isHintPiece={isHintPiece}
+                    isAvailable={availablePieces[key]}
+                    onPieceSelect={onPieceSelect}
+                    rotation={rotation}
+                    flip={flip}
+                  />
+                ) : (
+                  <ClickablePiece
+                    pieceKey={key}
+                    piece={piece}
+                    isSelected={isSelected}
+                    isHintPiece={isHintPiece}
+                    isAvailable={availablePieces[key]}
+                    onPieceSelect={onPieceSelect}
+                    rotation={rotation}
+                    flip={flip}
+                  />
+                )}
                 {availablePieces[key] && (
                   <div className="piece-controls">
                     <button
@@ -82,6 +96,14 @@ function DraggablePiece({
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : undefined
 
+  const handleClick = (e) => {
+    // Only trigger piece selection if not dragging
+    if (!isDragging && isAvailable) {
+      e.stopPropagation()
+      onPieceSelect(piece)
+    }
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -89,11 +111,46 @@ function DraggablePiece({
       {...listeners}
       {...attributes}
       className={`draggable-piece ${isDragging ? 'dragging' : ''}`}
+      onClick={handleClick}
     >
       <PieceDisplay
         pieceKey={pieceKey}
         piece={piece}
-        onClick={onPieceSelect}
+        isSelected={isSelected}
+        isHintPiece={isHintPiece}
+        isAvailable={isAvailable}
+        rotation={rotation}
+        flip={flip}
+      />
+    </div>
+  )
+}
+
+// Clickable piece component (for click-and-select mode)
+function ClickablePiece({ 
+  pieceKey, 
+  piece, 
+  isSelected, 
+  isHintPiece, 
+  isAvailable, 
+  onPieceSelect, 
+  rotation, 
+  flip 
+}) {
+  const handleClick = () => {
+    if (isAvailable) {
+      onPieceSelect(piece)
+    }
+  }
+
+  return (
+    <div
+      className={`clickable-piece ${isSelected ? 'selected' : ''}`}
+      onClick={handleClick}
+    >
+      <PieceDisplay
+        pieceKey={pieceKey}
+        piece={piece}
         isSelected={isSelected}
         isHintPiece={isHintPiece}
         isAvailable={isAvailable}

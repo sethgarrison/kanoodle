@@ -86,6 +86,12 @@
   animation: dropZonePulse 1.5s infinite;
 }
 
+.grid-cell.drop-preview-cell {
+  background: radial-gradient(circle at 30% 30%, var(--piece-color, var(--accent-primary)), var(--piece-color-dark, var(--accent-secondary)));
+  border-color: var(--piece-color-dark, var(--accent-secondary));
+  animation: dropPreviewPulse 0.8s infinite;
+}
+
 @keyframes dropPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
@@ -99,6 +105,17 @@
   50% { 
     transform: scale(1.1);
     box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.5);
+  }
+}
+
+@keyframes dropPreviewPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% { 
+    transform: scale(1.05);
+    opacity: 0.6;
   }
 }
 

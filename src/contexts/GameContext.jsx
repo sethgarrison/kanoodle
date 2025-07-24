@@ -17,6 +17,19 @@ export const GameProvider = ({ children }) => {
   const [draggedPiece, setDraggedPiece] = useState(null)
   const [currentHint, setCurrentHint] = useState(null)
   const [hintPreview, setHintPreview] = useState(null)
+  
+  // Detect mobile and set smart defaults
+  const isMobile = () => {
+    // Check for touch capability and screen size
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    const isSmallScreen = window.innerWidth <= 768
+    const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    
+    return hasTouch && (isSmallScreen || isMobileUserAgent)
+  }
+  
+  const [dragAndDropMode, setDragAndDropMode] = useState(isMobile()) // true = drag&drop, false = click&select
+  const [dropPreview, setDropPreview] = useState(null)
   const [gameState, setGameState] = useState({
     grid: gameEngine.getGrid(),
     availablePieces: gameEngine.getAvailablePieces(),
@@ -46,7 +59,8 @@ export const GameProvider = ({ children }) => {
         .map(([pieceRow, pieceCol]) => [hintRow + pieceRow, hintCol + pieceCol])
       // If the clicked cell is in the hint preview
       if (hintCells.some(([r, c]) => r === row && c === col)) {
-        const success = gameEngine.placePieceExact(pieceKey, hintRow, hintCol, rotation, flip)
+        // Use the clicked position as the drop target (top-left corner)
+        const success = gameEngine.placePieceExact(pieceKey, row, col, rotation, flip)
         if (success) {
           solutionManager.advanceHint()
           updateGameState()
@@ -97,9 +111,14 @@ export const GameProvider = ({ children }) => {
     const flip = gameEngine.getPieceFlip(pieceKey)
     const rotatedCoordinates = gameEngine.getRotatedCoordinates(pieceKey, rotation, flip)
     
+    // Calculate the offset to make the drop position the top-left corner
+    const [offsetRow, offsetCol] = gameEngine.getPieceTopLeftOffset(pieceKey, rotation, flip)
+    const adjustedRow = row - offsetRow
+    const adjustedCol = col - offsetCol
+    
     return rotatedCoordinates.map(([pieceRow, pieceCol]) => {
-      const gridRow = row + pieceRow
-      const gridCol = col + pieceCol
+      const gridRow = adjustedRow + pieceRow
+      const gridCol = adjustedCol + pieceCol
       return [gridRow, gridCol]
     }).filter(([gridRow, gridCol]) => 
       gridRow >= 0 && gridRow < 5 && gridCol >= 0 && gridCol < 11
@@ -114,6 +133,51 @@ export const GameProvider = ({ children }) => {
     
     if (piece && gameEngine.getAvailablePieces()[pieceKey]) {
       setDraggedPiece(piece)
+    }
+  }
+
+  const handleDragOver = (event) => {
+    const { over } = event
+    if (over && over.id.startsWith('cell-')) {
+      const [row, col] = over.id.replace('cell-', '').split('-').map(Number)
+      if (draggedPiece) {
+        // Show drop preview
+        const pieceKey = Object.keys(gameEngine.getAllPieces()).find(
+          key => gameEngine.getPiece(key).name === draggedPiece.name
+        )
+        if (pieceKey) {
+          const rotation = gameEngine.getPieceRotation(pieceKey)
+          const flip = gameEngine.getPieceFlip(pieceKey)
+          const rotatedCoordinates = gameEngine.getRotatedCoordinates(pieceKey, rotation, flip)
+          
+          // Calculate the offset to make the drop position the top-left corner
+          const [offsetRow, offsetCol] = gameEngine.getPieceTopLeftOffset(pieceKey, rotation, flip)
+          const adjustedRow = row - offsetRow
+          const adjustedCol = col - offsetCol
+          
+          // Check if placement would be valid
+          let isValid = true
+          for (const [pieceRow, pieceCol] of rotatedCoordinates) {
+            const gridRow = adjustedRow + pieceRow
+            const gridCol = adjustedCol + pieceCol
+            
+            if (gridRow < 0 || gridRow >= 5 || gridCol < 0 || gridCol >= 11 || gameState.grid[gridRow][gridCol] !== null) {
+              isValid = false
+              break
+            }
+          }
+          
+          setDropPreview({
+            pieceKey,
+            position: [adjustedRow, adjustedCol],
+            rotation,
+            flip,
+            isValid
+          })
+        }
+      }
+    } else {
+      setDropPreview(null)
     }
   }
 
@@ -132,17 +196,7 @@ export const GameProvider = ({ children }) => {
     }
     
     setDraggedPiece(null)
-  }
-
-  const handleDragOver = (event) => {
-    const { over } = event
-    if (over && over.id.startsWith('cell-')) {
-      // Show drop zone preview
-      const [row, col] = over.id.replace('cell-', '').split('-').map(Number)
-      if (draggedPiece) {
-        // Preview logic can be added here if needed
-      }
-    }
+    setDropPreview(null)
   }
 
   const handlePieceSelect = (piece) => {
@@ -291,12 +345,21 @@ export const GameProvider = ({ children }) => {
     URL.revokeObjectURL(url)
   }
 
+  const toggleDragAndDropMode = () => {
+    setDragAndDropMode(!dragAndDropMode)
+    // Clear any selected/dragged pieces when switching modes
+    setSelectedPiece(null)
+    setDraggedPiece(null)
+  }
+
   const value = {
     // State
     selectedPiece,
     draggedPiece,
     currentHint,
     hintPreview,
+    dragAndDropMode,
+    dropPreview,
     gameState,
     
     // Handlers
@@ -313,6 +376,7 @@ export const GameProvider = ({ children }) => {
     handleApplyHint,
     handleResetHints,
     handleExportSolution,
+    toggleDragAndDropMode,
     getDropZonePreview,
   }
 

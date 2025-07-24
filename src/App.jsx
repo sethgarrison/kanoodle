@@ -29,6 +29,8 @@ function AppContent() {
     selectedPiece,
     draggedPiece,
     hintPreview,
+    dragAndDropMode,
+    dropPreview,
     gameState,
     handleCellClick,
     handleDragStart,
@@ -42,6 +44,7 @@ function AppContent() {
     handleGetHint,
     handleApplyHint,
     handleExportSolution,
+    toggleDragAndDropMode,
     getDropZonePreview,
   } = useGameContext()
 
@@ -56,67 +59,72 @@ function AppContent() {
     ])
   )
 
-  return (
-    <DndContext
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-    >
-      <div className="app">
-        {gameState.isSolved && <Confetti />}
-        <NavBar isSolved={gameState.isSolved} />
+  const mainContent = (
+    <div className="app">
+      {gameState.isSolved && <Confetti />}
+      <NavBar isSolved={gameState.isSolved} />
 
-        <main className="app-main">
-          <div className="game-container">
-            <div className="grid-section">
-              <KanoodleContainer stats={gameState.stats}>
-                <Grid
-                  grid={gameState.grid}
-                  selectedPiece={selectedPiece}
-                  hintPreview={hintPreview}
-                  onCellClick={handleCellClick}
-                  onApplyHint={handleApplyHint}
-                  getDropZonePreview={getDropZonePreview}
-                />
-              </KanoodleContainer>
+      <main className="app-main">
+        <div className="game-container">
+          <div className="grid-section">
+            <KanoodleContainer stats={gameState.stats}>
+              <Grid
+                grid={gameState.grid}
+                selectedPiece={selectedPiece}
+                hintPreview={hintPreview}
+                dropPreview={dropPreview}
+                onCellClick={handleCellClick}
+                onApplyHint={handleApplyHint}
+                getDropZonePreview={getDropZonePreview}
+              />
+            </KanoodleContainer>
 
-              {/* Simple Controls */}
-              {hintPreview && (
-                <div className="grid-info">
-                  <p className="hint-status">💡 Click the grayed-out piece to place it!</p>
-                </div>
-              )}
-
-              <div className="simple-controls">
-                <a
-                  className="control-link"
-                  onClick={handleGetHint}
-                >
-                  Get Hint
-                </a>
-                <a
-                  className="control-link"
-                  onClick={handleReset}
-                  tabIndex={0}
-                >
-                  Reset
-                </a>
+            {/* Simple Controls */}
+            {hintPreview && (
+              <div className="grid-info">
+                <p className="hint-status">💡 Click the grayed-out piece to place it!</p>
               </div>
+            )}
+
+            <div className="simple-controls">
+              <a
+                className="control-link"
+                onClick={handleGetHint}
+              >
+                Get Hint
+              </a>
+              <a
+                className="control-link"
+                onClick={handleReset}
+                tabIndex={0}
+              >
+                Reset
+              </a>
+              <a
+                className="control-link"
+                onClick={toggleDragAndDropMode}
+                tabIndex={0}
+              >
+                {dragAndDropMode ? 'Switch to Click Mode' : 'Switch to Drag Mode'}
+              </a>
             </div>
-
-            <PiecesSection
-              pieces={pieces}
-              availablePieces={gameState.availablePieces}
-              selectedPiece={selectedPiece}
-              hintPreview={hintPreview}
-              onPieceSelect={handlePieceSelect}
-              onRotate={handlePieceRotate}
-              onFlip={handlePieceFlip}
-            />
           </div>
-        </main>
 
-        {/* Drag Overlay */}
+          <PiecesSection
+            pieces={pieces}
+            availablePieces={gameState.availablePieces}
+            selectedPiece={selectedPiece}
+            hintPreview={hintPreview}
+            dragAndDropMode={dragAndDropMode}
+            onPieceSelect={handlePieceSelect}
+            onRotate={handlePieceRotate}
+            onFlip={handlePieceFlip}
+          />
+        </div>
+      </main>
+
+      {/* Drag Overlay - only render when in drag mode */}
+      {dragAndDropMode && (
         <DragOverlay>
           {draggedPiece ? (
             <div className="drag-overlay">
@@ -145,9 +153,19 @@ function AppContent() {
             </div>
           ) : null}
         </DragOverlay>
-      </div>
-    </DndContext>
+      )}
+    </div>
   )
+
+  return dragAndDropMode ? (
+    <DndContext
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+    >
+      {mainContent}
+    </DndContext>
+  ) : mainContent
 }
 
 // Helper function for darker color

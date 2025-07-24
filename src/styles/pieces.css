@@ -245,8 +245,7 @@
 
 .draggable-piece.dragging {
   cursor: grabbing;
-  opacity: 0.5;
-  z-index: 1000;
+  opacity: 0.2;
 }
 
 /* Ensure piece controls are always visible and clickable */
@@ -272,7 +271,7 @@
 
 .drag-overlay .piece-display {
   transform: scale(0.8);
-  opacity: 0.8;
+  opacity: 0.2;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -323,4 +322,58 @@
 .piece-wrapper .rotate-button:active,
 .piece-wrapper .flip-button:active {
   transform: scale(0.95);
+} 
+
+/* Draggable Piece */
+.draggable-piece {
+  cursor: grab;
+  transition: all var(--transition-medium);
+}
+
+.draggable-piece:hover {
+  transform: translateY(-2px);
+}
+
+.draggable-piece.dragging {
+  cursor: grabbing;
+  opacity: 0.2;
+}
+
+/* Clickable Piece */
+.clickable-piece {
+  cursor: pointer;
+  transition: all var(--transition-medium);
+}
+
+.clickable-piece:hover {
+  transform: translateY(-2px);
+}
+
+.clickable-piece.selected {
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+/* Drag Overlay */
+.drag-overlay {
+  background: rgba(31, 41, 55, 0.2);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-heavy);
+  border: 2px solid var(--accent-primary);
+}
+
+.drag-overlay .piece-display {
+  background: transparent;
+  box-shadow: none;
+  padding: var(--spacing-sm);
+}
+
+.drag-overlay .piece-grid {
+  gap: 3px;
+}
+
+.drag-overlay .piece-cell {
+  width: 20px;
+  height: 20px;
 } 

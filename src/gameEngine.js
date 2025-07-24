@@ -116,24 +116,57 @@ export class KanoodleGameEngine {
     return true
   }
 
-  // Place a piece on the grid with rotation and flip
+  // Get the top-left corner offset for a piece
+  getPieceTopLeftOffset(pieceKey, rotation = 0, flip = false) {
+    const rotatedCoordinates = this.getRotatedCoordinates(pieceKey, rotation, flip)
+    
+    if (rotatedCoordinates.length === 0) return [0, 0]
+    
+    const minRow = Math.min(...rotatedCoordinates.map(([r, _]) => r))
+    const minCol = Math.min(...rotatedCoordinates.map(([_, c]) => c))
+    
+    return [minRow, minCol]
+  }
+
+  // Place a piece on the grid with the drop position being the top-left corner
   placePiece(pieceKey, row, col, rotation = 0, flip = false) {
     const currentRotation = this.pieceRotations[pieceKey] || 0
     const currentFlip = this.pieceFlips[pieceKey] || false
     const finalRotation = (currentRotation + rotation) % 4
     const finalFlip = currentFlip !== flip // XOR operation to combine current and new flip
     
-    if (!this.canPlacePiece(pieceKey, row, col, finalRotation, finalFlip)) {
+    const piece = this.pieces[pieceKey]
+    if (!piece || !this.availablePieces[pieceKey]) {
       return false
     }
 
-    const piece = this.pieces[pieceKey]
     const rotatedCoordinates = this.getRotatedCoordinates(pieceKey, finalRotation, finalFlip)
     
-    // Place the piece on the grid
+    // Calculate the offset to make the drop position the top-left corner
+    const [offsetRow, offsetCol] = this.getPieceTopLeftOffset(pieceKey, finalRotation, finalFlip)
+    const adjustedRow = row - offsetRow
+    const adjustedCol = col - offsetCol
+    
+    // Check if the adjusted position is valid
     for (const [pieceRow, pieceCol] of rotatedCoordinates) {
-      const gridRow = row + pieceRow
-      const gridCol = col + pieceCol
+      const gridRow = adjustedRow + pieceRow
+      const gridCol = adjustedCol + pieceCol
+
+      // Check bounds
+      if (gridRow < 0 || gridRow >= 5 || gridCol < 0 || gridCol >= 11) {
+        return false
+      }
+
+      // Check if cell is already occupied
+      if (this.grid[gridRow][gridCol] !== null) {
+        return false
+      }
+    }
+    
+    // Place the piece on the grid using the adjusted position
+    for (const [pieceRow, pieceCol] of rotatedCoordinates) {
+      const gridRow = adjustedRow + pieceRow
+      const gridCol = adjustedCol + pieceCol
       this.grid[gridRow][gridCol] = pieceKey
     }
 
@@ -143,8 +176,8 @@ export class KanoodleGameEngine {
     // Add to placed pieces with rotation info
     this.placedPieces.push({
       pieceKey,
-      row,
-      col,
+      row: adjustedRow,
+      col: adjustedCol,
       piece,
       rotation: finalRotation,
       flip: finalFlip
@@ -158,17 +191,38 @@ export class KanoodleGameEngine {
 
   // Place a piece on the grid with exact rotation and flip (for hints)
   placePieceExact(pieceKey, row, col, rotation = 0, flip = false) {
-    if (!this.canPlacePiece(pieceKey, row, col, rotation, flip)) {
+    const piece = this.pieces[pieceKey]
+    if (!piece || !this.availablePieces[pieceKey]) {
       return false
     }
 
-    const piece = this.pieces[pieceKey]
     const rotatedCoordinates = this.getRotatedCoordinates(pieceKey, rotation, flip)
     
-    // Place the piece on the grid
+    // Calculate the offset to make the drop position the top-left corner
+    const [offsetRow, offsetCol] = this.getPieceTopLeftOffset(pieceKey, rotation, flip)
+    const adjustedRow = row - offsetRow
+    const adjustedCol = col - offsetCol
+    
+    // Check if the adjusted position is valid
     for (const [pieceRow, pieceCol] of rotatedCoordinates) {
-      const gridRow = row + pieceRow
-      const gridCol = col + pieceCol
+      const gridRow = adjustedRow + pieceRow
+      const gridCol = adjustedCol + pieceCol
+
+      // Check bounds
+      if (gridRow < 0 || gridRow >= 5 || gridCol < 0 || gridCol >= 11) {
+        return false
+      }
+
+      // Check if cell is already occupied
+      if (this.grid[gridRow][gridCol] !== null) {
+        return false
+      }
+    }
+    
+    // Place the piece on the grid using the adjusted position
+    for (const [pieceRow, pieceCol] of rotatedCoordinates) {
+      const gridRow = adjustedRow + pieceRow
+      const gridCol = adjustedCol + pieceCol
       this.grid[gridRow][gridCol] = pieceKey
     }
 
@@ -178,8 +232,8 @@ export class KanoodleGameEngine {
     // Add to placed pieces with exact rotation info
     this.placedPieces.push({
       pieceKey,
-      row,
-      col,
+      row: adjustedRow,
+      col: adjustedCol,
       piece,
       rotation: rotation,
       flip: flip

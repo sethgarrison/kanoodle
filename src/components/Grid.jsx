@@ -6,6 +6,7 @@ function Grid({
   grid, 
   selectedPiece, 
   hintPreview, 
+  dropPreview,
   onCellClick, 
   onApplyHint,
   getDropZonePreview
@@ -47,6 +48,7 @@ function Grid({
 
   const renderGrid = () => {
     const hintPreviewCells = new Map()
+    const dropPreviewCells = new Map()
     
     if (hintPreview) {
       const pieceKey = hintPreview.pieceKey
@@ -66,6 +68,28 @@ function Grid({
         }
       })
     }
+    
+    if (dropPreview) {
+      const pieceKey = dropPreview.pieceKey
+      const rotation = dropPreview.rotation || 0
+      const flip = dropPreview.flip || false
+      const [dropRow, dropCol] = dropPreview.position
+      
+      const rotatedCoordinates = gameEngine.getRotatedCoordinates(pieceKey, rotation, flip)
+      
+      rotatedCoordinates.forEach(([pieceRow, pieceCol]) => {
+        const gridRow = dropRow + pieceRow
+        const gridCol = dropCol + pieceCol
+        
+        if (gridRow >= 0 && gridRow < 5 && gridCol >= 0 && gridCol < 11) {
+          const piece = gameEngine.getPiece(pieceKey)
+          dropPreviewCells.set(`${gridRow}-${gridCol}`, {
+            color: piece.color,
+            isValid: dropPreview.isValid
+          })
+        }
+      })
+    }
 
     return (
       <div 
@@ -78,6 +102,8 @@ function Grid({
               const pieceInfo = gameEngine.getPieceInfoAt(rowIndex, colIndex)
               const hintPreviewColor = hintPreviewCells.get(`${rowIndex}-${colIndex}`)
               const isHintPreviewCell = hintPreviewColor && !pieceInfo
+              const dropPreviewData = dropPreviewCells.get(`${rowIndex}-${colIndex}`)
+              const isDropPreviewCell = dropPreviewData && !pieceInfo && !isHintPreviewCell
               const isDropZonePreview = dropZonePreview.some(([r, c]) => r === rowIndex && c === colIndex)
               
               return (
@@ -88,6 +114,8 @@ function Grid({
                   pieceInfo={pieceInfo}
                   isHintPreviewCell={isHintPreviewCell}
                   hintPreviewColor={hintPreviewColor}
+                  isDropPreviewCell={isDropPreviewCell}
+                  dropPreviewData={dropPreviewData}
                   isDropZonePreview={isDropZonePreview}
                   selectedPiece={selectedPiece}
                   onClick={handleCellClick}
@@ -113,6 +141,8 @@ function GridCell({
   pieceInfo, 
   isHintPreviewCell, 
   hintPreviewColor, 
+  isDropPreviewCell, 
+  dropPreviewData, 
   isDropZonePreview, 
   selectedPiece, 
   onClick, 
@@ -127,7 +157,7 @@ function GridCell({
   return (
     <div
       ref={setNodeRef}
-      className={`grid-cell${pieceInfo ? ' filled' : ''}${isHintPreviewCell ? ' hint-preview-cell' : ''}${isDropZonePreview ? ' drop-zone-preview' : ''}${isOver ? ' drag-over' : ''}`}
+      className={`grid-cell${pieceInfo ? ' filled' : ''}${isHintPreviewCell ? ' hint-preview-cell' : ''}${isDropPreviewCell ? ' drop-preview-cell' : ''}${isDropZonePreview ? ' drop-zone-preview' : ''}${isOver ? ' drag-over' : ''}`}
       onClick={() => onClick(row, col)}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -146,6 +176,13 @@ function GridCell({
               '--piece-color': hintPreviewColor,
               '--piece-color-dark': getDarkerColor(hintPreviewColor),
               opacity: 0.6,
+              cursor: 'pointer',
+            }
+          : isDropPreviewCell
+          ? {
+              '--piece-color': dropPreviewData.color,
+              '--piece-color-dark': getDarkerColor(dropPreviewData.color),
+              opacity: 0.4,
               cursor: 'pointer',
             }
           : isDropZonePreview
