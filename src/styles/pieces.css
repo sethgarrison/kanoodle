@@ -124,20 +124,29 @@
 }
 
 .piece-cell {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  background: transparent;
-  border: 1px solid transparent;
-  transition: all var(--transition-fast);
+  width: 16px;
+  height: 16px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid var(--background-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-medium);
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 30%, var(--background-tertiary), var(--background-secondary));
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    var(--shadow-light);
 }
 
 .piece-cell.filled {
   background: radial-gradient(circle at 30% 30%, var(--piece-color, var(--accent-primary)), var(--piece-color-dark, var(--accent-secondary)));
   border-color: var(--piece-color-dark, var(--accent-secondary));
   box-shadow: 
-    inset 0 1px 2px rgba(0, 0, 0, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2);
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    var(--shadow-light);
 }
 
 /* Selected Piece Info */
@@ -225,4 +234,93 @@
   .piece-display {
     min-height: 60px;
   }
+} 
+
+/* Draggable piece wrapper */
+.draggable-piece {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.draggable-piece.dragging {
+  cursor: grabbing;
+  opacity: 0.5;
+  z-index: 1000;
+}
+
+/* Ensure piece controls are always visible and clickable */
+.draggable-piece .piece-controls {
+  pointer-events: auto;
+  user-select: none;
+  touch-action: auto;
+}
+
+.draggable-piece .rotate-button,
+.draggable-piece .flip-button {
+  pointer-events: auto;
+  user-select: none;
+  touch-action: auto;
+  z-index: 10;
+}
+
+/* Drag overlay */
+.drag-overlay {
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.drag-overlay .piece-display {
+  transform: scale(0.8);
+  opacity: 0.8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Drag over state for grid cells */
+.grid-cell.drag-over {
+  background: rgba(59, 130, 246, 0.2);
+  border: 2px dashed #3b82f6;
+} 
+
+/* Piece wrapper for controls outside draggable area */
+.piece-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.piece-wrapper .piece-controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.piece-wrapper .rotate-button,
+.piece-wrapper .flip-button {
+  background: var(--button-background);
+  color: var(--button-text);
+  border: none;
+  border-radius: var(--border-radius-small);
+  padding: var(--spacing-xs);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+}
+
+.piece-wrapper .rotate-button:hover,
+.piece-wrapper .flip-button:hover {
+  background: var(--button-hover);
+  transform: scale(1.05);
+}
+
+.piece-wrapper .rotate-button:active,
+.piece-wrapper .flip-button:active {
+  transform: scale(0.95);
 } 

@@ -37,6 +37,26 @@ export const GameProvider = ({ children }) => {
   }
 
   const handleCellClick = (row, col) => {
+    // If a hint is active and the user clicks a cell in the hint preview, place the hint piece
+    if (hintPreview) {
+      const { pieceKey, position, rotation, flip } = hintPreview
+      const [hintRow, hintCol] = position
+      // Get all grid cells covered by the hint piece
+      const hintCells = gameEngine.getRotatedCoordinates(pieceKey, rotation, flip)
+        .map(([pieceRow, pieceCol]) => [hintRow + pieceRow, hintCol + pieceCol])
+      // If the clicked cell is in the hint preview
+      if (hintCells.some(([r, c]) => r === row && c === col)) {
+        const success = gameEngine.placePieceExact(pieceKey, hintRow, hintCol, rotation, flip)
+        if (success) {
+          solutionManager.advanceHint()
+          updateGameState()
+          setCurrentHint(null)
+          setHintPreview(null)
+        }
+        return
+      }
+    }
+    // Normal logic
     if (selectedPiece) {
       const pieceKey = Object.keys(gameEngine.getAllPieces()).find(
         key => gameEngine.getPiece(key).name === selectedPiece.name
@@ -64,10 +84,6 @@ export const GameProvider = ({ children }) => {
     }
   }
 
-  const handleDragStart = (piece) => {
-    setDraggedPiece(piece)
-  }
-
   const getDropZonePreview = (row, col, piece) => {
     if (!piece) return []
     
@@ -90,53 +106,70 @@ export const GameProvider = ({ children }) => {
     )
   }
 
-  const handleDragOver = (e) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
+  // DnD Kit handlers
+  const handleDragStart = (event) => {
+    const { active } = event
+    const pieceKey = active.id
+    const piece = gameEngine.getPiece(pieceKey)
     
-    // Add visual feedback for drag-over
-    const target = e.currentTarget
-    if (draggedPiece && !target.classList.contains('drag-over')) {
-      target.classList.add('drag-over')
+    if (piece && gameEngine.getAvailablePieces()[pieceKey]) {
+      setDraggedPiece(piece)
     }
   }
 
-  const handleDragLeave = (e) => {
-    // Remove visual feedback when leaving drop zone
-    const target = e.currentTarget
-    target.classList.remove('drag-over')
-  }
-
-  const handleDrop = (row, col) => {
-    if (draggedPiece) {
-      const pieceKey = Object.keys(gameEngine.getAllPieces()).find(
-        key => gameEngine.getPiece(key).name === draggedPiece.name
-      )
+  const handleDragEnd = (event) => {
+    const { active, over } = event
+    
+    if (over && over.id.startsWith('cell-')) {
+      const [row, col] = over.id.replace('cell-', '').split('-').map(Number)
+      const pieceKey = active.id
       
-      if (pieceKey && gameEngine.placePiece(pieceKey, row, col)) {
+      if (gameEngine.placePiece(pieceKey, row, col)) {
         setSelectedPiece(null)
         setDraggedPiece(null)
         updateGameState()
-        
-        // Add drop animation
-        const target = document.querySelector(`[data-row="${row}"][data-col="${col}"]`)
-        if (target) {
-          target.classList.add('drop-zone')
-          setTimeout(() => {
-            target.classList.remove('drop-zone')
-          }, 600)
-        }
       }
     }
     
-    // Clean up drag-over state
-    document.querySelectorAll('.grid-cell.drag-over').forEach(cell => {
-      cell.classList.remove('drag-over')
-    })
+    setDraggedPiece(null)
+  }
+
+  const handleDragOver = (event) => {
+    const { over } = event
+    if (over && over.id.startsWith('cell-')) {
+      // Show drop zone preview
+      const [row, col] = over.id.replace('cell-', '').split('-').map(Number)
+      if (draggedPiece) {
+        // Preview logic can be added here if needed
+      }
+    }
   }
 
   const handlePieceSelect = (piece) => {
-    setSelectedPiece(piece)
+    // Find the piece key that matches this piece
+    const pieceKey = Object.keys(gameEngine.getAllPieces()).find(
+      key => gameEngine.getPiece(key).name === piece.name
+    )
+    
+    if (hintPreview && hintPreview.pieceKey === pieceKey) {
+      // If this is the hint piece, we should place it automatically
+      const success = gameEngine.placePieceExact(
+        hintPreview.pieceKey,
+        hintPreview.position[0],
+        hintPreview.position[1],
+        hintPreview.rotation,
+        hintPreview.flip
+      )
+      
+      if (success) {
+        solutionManager.advanceHint()
+        updateGameState()
+        setCurrentHint(null)
+        setHintPreview(null)
+      }
+    } else {
+      setSelectedPiece(piece)
+    }
   }
 
   const handlePieceRotate = (piece) => {
@@ -181,9 +214,6 @@ export const GameProvider = ({ children }) => {
   }
 
   const handleGetHint = () => {
-    console.log('Getting hint...')
-    console.log('Has solutions:', solutionManager.hasSolutions())
-    console.log('Current solution:', solutionManager.getCurrentSolution())
     
     if (!solutionManager.hasSolutions()) {
       return
@@ -194,14 +224,12 @@ export const GameProvider = ({ children }) => {
     setDraggedPiece(null)
 
     const hint = solutionManager.getNextHint()
-    console.log('Got hint:', hint)
     
     if (hint) {
       setCurrentHint(hint)
       
       // Create hint preview
       const pieceData = solutionManager.getCurrentSolution()[hint.stepNumber - 1]
-      console.log('Piece data for hint:', pieceData)
       
       if (pieceData) {
         setHintPreview({
@@ -274,9 +302,8 @@ export const GameProvider = ({ children }) => {
     // Handlers
     handleCellClick,
     handleDragStart,
+    handleDragEnd,
     handleDragOver,
-    handleDragLeave,
-    handleDrop,
     handlePieceSelect,
     handlePieceRotate,
     handlePieceFlip,

@@ -1,7 +1,7 @@
 import React from 'react'
 import { gameEngine } from '../gameEngine'
 
-function PieceDisplay({ piece, onClick, isSelected, isAvailable, onDragStart, onRotate, onFlip, rotation = 0, flip = false, pieceKey }) {
+function PieceDisplay({ piece, onClick, isSelected, isHintPiece, isAvailable, rotation = 0, flip = false, pieceKey }) {
   const maxRow = Math.max(...piece.coordinates.map(coord => coord[0]))
   const maxCol = Math.max(...piece.coordinates.map(coord => coord[1]))
   const gridSize = Math.max(maxRow + 1, maxCol + 1)
@@ -58,59 +58,18 @@ function PieceDisplay({ piece, onClick, isSelected, isAvailable, onDragStart, on
     )
   }
 
-  const handleDragStart = (e) => {
-    if (!isAvailable) {
-      e.preventDefault()
-      return
-    }
-    
-    e.dataTransfer.setData('text/plain', piece.name)
-    e.dataTransfer.effectAllowed = 'copy'
-    
-    if (onDragStart) {
-      onDragStart(piece)
-    }
-  }
-
-  const handleRotate = (e) => {
-    e.stopPropagation()
-    if (onRotate) {
-      onRotate(piece)
-    }
-  }
-
-  const handleFlip = (e) => {
-    e.stopPropagation()
-    if (onFlip) {
-      onFlip(piece)
+  const handleClick = () => {
+    if (!isAvailable) return
+    if (onClick) {
+      onClick(piece)
     }
   }
 
   return (
     <div 
-      className={`piece-display ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''}`}
-      onClick={() => isAvailable && onClick(piece)}
-      draggable={isAvailable}
-      onDragStart={handleDragStart}
+      className={`piece-display ${isSelected ? 'selected' : ''} ${isHintPiece ? 'hint-piece' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+      onClick={handleClick}
     >
-      {isAvailable && (
-        <div className="piece-controls">
-          <button
-            className="rotate-button"
-            onClick={handleRotate}
-            title="Rotate piece"
-          >
-            🔄
-          </button>
-          <button
-            className="flip-button"
-            onClick={handleFlip}
-            title="Flip piece"
-          >
-            ↔️
-          </button>
-        </div>
-      )}
       {renderPieceGrid()}
     </div>
   )

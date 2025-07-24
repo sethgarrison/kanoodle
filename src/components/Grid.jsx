@@ -1,16 +1,12 @@
 import React, { useState } from 'react'
+import { useDroppable } from '@dnd-kit/core'
 import { gameEngine } from '../gameEngine'
 
 function Grid({ 
   grid, 
   selectedPiece, 
-  draggedPiece, 
   hintPreview, 
   onCellClick, 
-  onDragStart, 
-  onDragOver, 
-  onDragLeave, 
-  onDrop, 
   onApplyHint,
   getDropZonePreview
 }) {
@@ -43,48 +39,39 @@ function Grid({
     setDropZonePreview([])
   }
 
-  const handleCellDragOver = (e, row, col) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
-    
-    // Show drop zone preview for dragged piece
-    if (draggedPiece) {
-      const preview = getDropZonePreview(row, col, draggedPiece)
-      setDropZonePreview(preview)
+  const handleCellClick = (row, col) => {
+    if (onCellClick) {
+      onCellClick(row, col)
     }
-    
-    onDragOver(e)
-  }
-
-  const handleCellDrop = (row, col) => {
-    setDropZonePreview([])
-    onDrop(row, col)
   }
 
   const renderGrid = () => {
-    // Calculate hint preview cells
     const hintPreviewCells = new Map()
+    
     if (hintPreview) {
-      const piece = gameEngine.getPiece(hintPreview.pieceKey)
-      if (piece) {
-        const rotatedCoordinates = gameEngine.getRotatedCoordinates(
-          hintPreview.pieceKey, 
-          hintPreview.rotation, 
-          hintPreview.flip
-        )
+      const pieceKey = hintPreview.pieceKey
+      const rotation = hintPreview.rotation || 0
+      const flip = hintPreview.flip || false
+      const [hintRow, hintCol] = hintPreview.position
+      
+      const rotatedCoordinates = gameEngine.getRotatedCoordinates(pieceKey, rotation, flip)
+      
+      rotatedCoordinates.forEach(([pieceRow, pieceCol]) => {
+        const gridRow = hintRow + pieceRow
+        const gridCol = hintCol + pieceCol
         
-        for (const [pieceRow, pieceCol] of rotatedCoordinates) {
-          const gridRow = hintPreview.position[0] + pieceRow
-          const gridCol = hintPreview.position[1] + pieceCol
-          if (gridRow >= 0 && gridRow < 5 && gridCol >= 0 && gridCol < 11) {
-            hintPreviewCells.set(`${gridRow}-${gridCol}`, piece.color)
-          }
+        if (gridRow >= 0 && gridRow < 5 && gridCol >= 0 && gridCol < 11) {
+          const piece = gameEngine.getPiece(pieceKey)
+          hintPreviewCells.set(`${gridRow}-${gridCol}`, piece.color)
         }
-      }
+      })
     }
 
     return (
-      <div className="grid-container">
+      <div 
+        className="grid-container"
+        style={{ position: 'relative' }}
+      >
         {grid.map((row, rowIndex) => (
           <div key={rowIndex} className="grid-row">
             {row.map((cell, colIndex) => {
@@ -94,51 +81,20 @@ function Grid({
               const isDropZonePreview = dropZonePreview.some(([r, c]) => r === rowIndex && c === colIndex)
               
               return (
-                <div
+                <GridCell
                   key={`${rowIndex}-${colIndex}`}
-                  className={`grid-cell${pieceInfo ? ' filled' : ''}${isHintPreviewCell ? ' hint-preview-cell' : ''}${isDropZonePreview ? ' drop-zone-preview' : ''}`}
-                  onClick={() => {
-                    if (isHintPreviewCell) {
-                      onApplyHint()
-                    } else {
-                      onCellClick(rowIndex, colIndex)
-                    }
-                  }}
+                  row={rowIndex}
+                  col={colIndex}
+                  pieceInfo={pieceInfo}
+                  isHintPreviewCell={isHintPreviewCell}
+                  hintPreviewColor={hintPreviewColor}
+                  isDropZonePreview={isDropZonePreview}
+                  selectedPiece={selectedPiece}
+                  onClick={handleCellClick}
                   onMouseEnter={() => handleCellMouseEnter(rowIndex, colIndex)}
                   onMouseLeave={handleCellMouseLeave}
-                  onDragOver={(e) => handleCellDragOver(e, rowIndex, colIndex)}
-                  onDrop={() => handleCellDrop(rowIndex, colIndex)}
-                  onDragLeave={onDragLeave}
-                  data-row={rowIndex}
-                  data-col={colIndex}
-                  title={pieceInfo ? `Click to remove ${pieceInfo.piece.name}` : ''}
-                  style={
-                    pieceInfo
-                      ? {
-                          '--piece-color': pieceInfo.piece.color,
-                          '--piece-color-dark': getDarkerColor(pieceInfo.piece.color),
-                          cursor: 'pointer',
-                        }
-                      : isHintPreviewCell
-                      ? {
-                          '--piece-color': hintPreviewColor,
-                          '--piece-color-dark': getDarkerColor(hintPreviewColor),
-                          opacity: 0.6,
-                          cursor: 'pointer',
-                        }
-                      : isDropZonePreview
-                      ? {
-                          '--piece-color': selectedPiece?.color || draggedPiece?.color || '#4a5568',
-                          '--piece-color-dark': getDarkerColor(selectedPiece?.color || draggedPiece?.color || '#4a5568'),
-                          opacity: 0.8,
-                          cursor: 'pointer',
-                        }
-                      : {
-                          cursor: selectedPiece || draggedPiece ? 'pointer' : 'default',
-                        }
-                  }
-                >
-                </div>
+                  getDarkerColor={getDarkerColor}
+                />
               )
             })}
           </div>
@@ -148,6 +104,64 @@ function Grid({
   }
 
   return renderGrid()
+}
+
+// Individual grid cell component with dnd-kit support
+function GridCell({ 
+  row, 
+  col, 
+  pieceInfo, 
+  isHintPreviewCell, 
+  hintPreviewColor, 
+  isDropZonePreview, 
+  selectedPiece, 
+  onClick, 
+  onMouseEnter, 
+  onMouseLeave, 
+  getDarkerColor 
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `cell-${row}-${col}`,
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`grid-cell${pieceInfo ? ' filled' : ''}${isHintPreviewCell ? ' hint-preview-cell' : ''}${isDropZonePreview ? ' drop-zone-preview' : ''}${isOver ? ' drag-over' : ''}`}
+      onClick={() => onClick(row, col)}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      data-row={row}
+      data-col={col}
+      title={pieceInfo ? `Click to remove ${pieceInfo.piece.name}` : ''}
+      style={
+        pieceInfo
+          ? {
+              '--piece-color': pieceInfo.piece.color,
+              '--piece-color-dark': getDarkerColor(pieceInfo.piece.color),
+              cursor: 'pointer',
+            }
+          : isHintPreviewCell
+          ? {
+              '--piece-color': hintPreviewColor,
+              '--piece-color-dark': getDarkerColor(hintPreviewColor),
+              opacity: 0.6,
+              cursor: 'pointer',
+            }
+          : isDropZonePreview
+          ? {
+              '--piece-color': selectedPiece?.color || '#4a5568',
+              '--piece-color-dark': getDarkerColor(selectedPiece?.color || '#4a5568'),
+              opacity: 0.8,
+              cursor: 'pointer',
+            }
+          : {
+              cursor: selectedPiece ? 'pointer' : 'default',
+            }
+      }
+    >
+    </div>
+  )
 }
 
 export default Grid 
